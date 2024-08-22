@@ -152,21 +152,7 @@ services:
     networks:
       lan:
         ipv4_address: 10.0.0.11
-  samba:
-    image: dockurr/samba
-    container_name: samba
-    environment:
-      USER: ${smbuser}
-      PASS: ${smbpass}
-    ports:
-      - 445:445
-    volumes:
-      - /mnt:/storage/hdd
-      - /home/ubuntu:/home/ubuntu
-     networks:
-       lan:
-         ipv4_address: 10.0.0.254 
-
+  
 networks:
   lan:
     external: true
