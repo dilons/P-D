@@ -133,6 +133,10 @@ services:
       - /home/ubuntu/apps/jellyfin:/config
       - /mnt/hdd/data/media/tv:/data/tv
       - /mnt/hdd/data/media/movies:/data/movies
+      - device=/dev/video10:/dev/video10
+      - device=/dev/video11:/dev/video11
+      - device=/dev/video12:/dev/video12
+
     restart: unless-stopped
     networks:
        lan:
