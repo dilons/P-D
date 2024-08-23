@@ -136,6 +136,9 @@ services:
       - /dev/video10:/dev/video10
       - /dev/video11:/dev/video11
       - /dev/video12:/dev/video12
+    ports:
+      - '1900:1900'
+      
 
     restart: unless-stopped
     networks:
