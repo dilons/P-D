@@ -137,8 +137,10 @@ services:
       - /dev/video11:/dev/video11
       - /dev/video12:/dev/video12
     ports:
-      - '1900:1900'
-      
+      - '1900:1900/udp'
+      - '7359:7359/udp'
+  
+
 
     restart: unless-stopped
     networks:
