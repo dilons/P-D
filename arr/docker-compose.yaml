@@ -40,6 +40,9 @@ services:
     volumes:
       - /home/ubuntu/apps/qbitorrent/appdata/config:/config
       - /mnt/hdd/data:/data
+      - /mnt/ssd/data:/data/downloading
+    mem_limit:  2g
+    mem_reservation: 1g
     networks:
        lan:
           ipv4_address: 10.0.0.5
@@ -86,6 +89,7 @@ services:
       - /home/ubuntu/apps/bazarr/config:/config
       - /mnt/hdd/data/media/movies:/movies #optional
       - /mnt/hdd/data/media/tv:/tv #optional\
+
     networks:
         lan:
           ipv4_address: 10.0.0.7
@@ -97,7 +101,8 @@ services:
         environment:
           - LOG_LEVEL=info
           - TZ=America/Sao_Paulo
-
+        ports:
+          - 5055:5055
         volumes:
              - /home/ubuntu/apps/jellyseerr/config:/app/config
         networks:
@@ -133,15 +138,10 @@ services:
       - /home/ubuntu/apps/jellyfin:/config
       - /mnt/hdd/data/media/tv:/data/tv
       - /mnt/hdd/data/media/movies:/data/movies
+    devices:  
       - /dev/video10:/dev/video10
       - /dev/video11:/dev/video11
       - /dev/video12:/dev/video12
-    ports:
-      - '1900:1900/udp'
-      - '7359:7359/udp'
-  
-
-
     restart: unless-stopped
     networks:
        lan:
@@ -161,7 +161,110 @@ services:
     networks:
       lan:
         ipv4_address: 10.0.0.11
-  
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /home/ubuntu/apps/lidarr/config:/config
+      - /mnt/hdd/data/media/music:/music #optional
+      - /mnt/hdd/data/downloads/music:/downloads #optional
+
+    restart: unless-stopped
+    networks:
+      lan:
+        ipv4_address: 10.0.0.12
+
+  slskd:
+    image: slskd/slskd
+    container_name: slskd
+
+    environment:
+      - SLSKD_REMOTE_CONFIGURATION=true
+    volumes:
+      - /home/ubuntu/apps/soulseek/app:/app
+      - /mnt/hdd/data/media/music:/mnt/music
+    restart: always
+    networks:
+      lan:
+        ipv4_address: 10.0.0.13
+
+  samba:
+    image: dockurr/samba
+    container_name: samba
+    environment:
+      NAME: "pi"
+      USER: "dilos"
+      PASS: "dilos"
+    ports:
+      - 445:445
+    volumes:
+      - /home/ubuntu/apps/samba/smb.conf:/etc/samba/smb.conf
+      - /home/ubuntu/apps:/opt/apps
+      - /mnt/ssd:/mnt/ssd
+      - /mnt/hdd:/mnt/hdd
+
+  navidrome:
+     image: deluan/navidrome:latest
+     user: 1000:1000 
+     restart: unless-stopped
+     environment:
+
+       ND_SCANSCHEDULE: 1h
+       ND_LOGLEVEL: info  
+       ND_SESSIONTIMEOUT: 24h
+       ND_BASEURL: "https://pi.internal.dilon.me/navidrome"
+       ND_CONFIGFILE: "/data/navidrome.toml"
+     volumes:
+       - /home/ubuntu/apps/navidrome/data:/data
+       - /mnt/hdd/data/media/music/complete:/music:ro
+     networks:
+       lan:
+         ipv4_address: 10.0.0.14
+
+  nextcloud:
+    image: lscr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /home/ubuntu/apps/nextcloud/config:/config
+      - /mnt/hdd/data/nextcloud/data:/data
+    ports:
+      - 10443:443
+    restart: unless-stopped 
+    networks:
+       lan:
+         ipv4_address: 10.0.0.15
+
+  mariadb:
+    image: lscr.io/linuxserver/mariadb:latest
+    container_name: mariadb
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - MYSQL_ROOT_PASSWORD=root@next
+      - MYSQL_DATABASE=nextcloud #optional
+      - MYSQL_USER=nextcloud #optional
+      - MYSQL_PASSWORD=nextcloud@ #optional
+    volumes:
+      - /home/ubuntu/apps/mariadb/config:/config
+
+    restart: unless-stopped
+    networks:
+       lan:
+         ipv4_address: 10.0.0.16
+
+      
+      
+    
 networks:
   lan:
     external: true
